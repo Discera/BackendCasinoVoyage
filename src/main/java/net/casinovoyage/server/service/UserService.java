@@ -15,9 +15,10 @@ public class UserService {
 
     public UserModel registerUser(UserModel userModel){
         return userRepository.save(userModel);
-    };
+    }
 
     public boolean verifyUsername(String username){
+
         return false;
     }
 
