@@ -1,10 +1,13 @@
 package net.casinovoyage.server.service;
 
+import io.jsonwebtoken.JwtBuilder;
 import jakarta.transaction.Transactional;
+import net.casinovoyage.server.dto.UserLoginDto;
 import net.casinovoyage.server.dto.UserRegistrationDto;
 import net.casinovoyage.server.execptions.InvalidUserException;
 import net.casinovoyage.server.models.UserModel;
 import net.casinovoyage.server.repositorys.UserRepository;
+import net.casinovoyage.server.utils.JwtUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -56,6 +59,21 @@ public class UserService {
         return userRepository.save(user);
     }
 
+    public String login(UserLoginDto userLoginDto){
+        String username = userLoginDto.getUsername();
+        UserModel user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new InvalidUserException("Invalid user credentials"));
+
+        String salt = user.getSalt();
+        String password = userLoginDto.getPassword();
+
+        if(!passwordMatches(password, salt, user.getPwHash())){
+            throw new InvalidUserException("Invalid user0 credentials");
+        }
+
+        return JwtUtils.generateToken(user);
+    }
+
     public boolean verifyUsername(String username){
         return username.matches("^[a-zA-Z][a-zA-Z0-9-_]{4,16}$");
     }
@@ -91,6 +109,12 @@ public class UserService {
         BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
         String plainPassword = password + "." + salt;
         return passwordEncoder.encode(plainPassword);
+    }
+
+    public boolean passwordMatches(String password, String salt, String pwHash){
+        String plainPassword = password + "." + salt;
+        BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+        return passwordEncoder.matches(plainPassword, pwHash);
     }
 
 }
