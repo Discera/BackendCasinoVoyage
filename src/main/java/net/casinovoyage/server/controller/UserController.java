@@ -4,6 +4,7 @@ import net.casinovoyage.server.dto.UserLoginDto;
 import net.casinovoyage.server.dto.UserRegistrationDto;
 import net.casinovoyage.server.execptions.InvalidUserException;
 import net.casinovoyage.server.service.UserService;
+import net.casinovoyage.server.utils.JwtUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -34,5 +35,17 @@ public class UserController {
         }catch (InvalidUserException e){
             return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
+    }
+
+    @GetMapping("/balance")
+    public ResponseEntity<?> getBalance(@RequestHeader("Authorization") String jwt){
+        boolean validToken = JwtUtils.verifyToken(jwt);
+        if(!validToken){
+            return new ResponseEntity<>("Invalid token", HttpStatus.BAD_REQUEST);
+        }
+
+        String userId = JwtUtils.getUserIdFromToken(jwt);
+        double balance = userService.getBalance(userId);
+        return new ResponseEntity<>(balance, HttpStatus.OK);
     }
 }

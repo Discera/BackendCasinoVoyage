@@ -15,6 +15,8 @@ import org.springframework.stereotype.Service;
 import java.security.SecureRandom;
 import java.util.Base64;
 import java.util.Date;
+import java.util.Optional;
+import java.util.UUID;
 
 @Service
 @Transactional
@@ -58,7 +60,6 @@ public class UserService {
         );
         return userRepository.save(user);
     }
-
     public String login(UserLoginDto userLoginDto){
         String username = userLoginDto.getUsername();
         UserModel user = userRepository.findByUsername(username)
@@ -73,48 +74,61 @@ public class UserService {
 
         return JwtUtils.generateToken(user);
     }
-
     public boolean verifyUsername(String username){
         return username.matches("^[a-zA-Z][a-zA-Z0-9-_]{4,16}$");
     }
-
     public boolean verifyUsernameFree(String username){
         return userRepository.findByUsername(username).isEmpty();
     }
-
     public boolean verifyEmail(String email){
         return email.matches("^[\\w-.+]+@([\\w-]+.)+[\\w-]{2,16}$");
     }
-
     public boolean verifyEmailFree(String email){
         return userRepository.findByEmail(email).isEmpty();
     }
-
     public boolean verifyPassword(String password){
         return password.matches("^((?=.*\\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[\\W]).{8,64})$");
     }
-
     public boolean verifyOldEnough(Date dateOfBirth){
         return (new Date().getTime() - dateOfBirth.getTime()) / 31536000000L >= 18;
     }
-
     public String generateSalt(){
         SecureRandom random = new SecureRandom();
         byte[] salt = new byte[16];
         random.nextBytes(salt);
         return Base64.getEncoder().encodeToString(salt);
     }
-
     public String hashPassword(String password, String salt){
         BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
         String plainPassword = password + "." + salt;
         return passwordEncoder.encode(plainPassword);
     }
-
     public boolean passwordMatches(String password, String salt, String pwHash){
         String plainPassword = password + "." + salt;
         BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
         return passwordEncoder.matches(plainPassword, pwHash);
     }
 
+    public boolean updateBalance(String userId, double balance){
+        Optional<UserModel> user = userRepository.findById(UUID.fromString(userId));
+        if(user.isEmpty()){
+            return false;
+        }
+        double newBalance = user.get().getBalance();
+        newBalance += balance;
+        user.get().setBalance(newBalance);
+        userRepository.save(user.get());
+        return true;
+    }
+
+    public boolean hasEnoughBalance(String userId, double balance){
+        Optional<UserModel> user = userRepository.findById(UUID.fromString(userId));
+        double compareBalance = user.get().getBalance();
+        return (compareBalance >= balance);
+    }
+
+    public double getBalance(String userId){
+        Optional<UserModel> user = userRepository.findById(UUID.fromString(userId));
+        return user.get().getBalance();
+    }
 }
