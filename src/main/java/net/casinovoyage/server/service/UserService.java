@@ -54,7 +54,7 @@ public class UserService {
                 userRegistrationDto.getEmail(),
                 userRegistrationDto.getDateOfBirth(),
                 true,
-                0.0,
+                10000.0,
                 hashedPassword,
                 salt
         );
