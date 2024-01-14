@@ -21,7 +21,7 @@ public class SlotController {
     @Autowired
     private UserService userService;
 
-    @GetMapping("/spin")
+    @PostMapping("/spin")
     public ResponseEntity<?> spin(@RequestBody SlotSpinDto slotSpinDto, @RequestHeader("Authorization") String jwt){
         boolean validToken = JwtUtils.verifyToken(jwt);
         if(!validToken){
