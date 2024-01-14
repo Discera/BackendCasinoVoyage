@@ -13,7 +13,7 @@ public class SpinGenerator {
         Symbols[][] symbols = new Symbols[3][5];
         for (int i = 0; i < 3; i++) {
             Symbols[] row = symbols[i];
-            generateRow(row, false);
+            generateRow(row, false, true);
         }
 
         boolean freeSpin = getLionCount(symbols) >= 3;
@@ -26,13 +26,17 @@ public class SpinGenerator {
         ArrayList<FreeSpinResult> freeSpinResults = new ArrayList<>();
         int winningWildCount = 1;
         int freeSpinCount = 5;
+        int totalFreeSpinsCount = 5;
         while (freeSpinCount > 0) {
+            System.out.println("Free spin count: " + freeSpinCount);
+            System.out.println("Total free spin count: " + totalFreeSpinsCount);
             Symbols[][] freeSpinSymbols = new Symbols[3][5];
             for (int i = 0; i < 3; i++) {
                 Symbols[] row = freeSpinSymbols[i];
-                generateRow(row, true);
+                generateRow(row, true, totalFreeSpinsCount < 20);
             }
             freeSpinCount += getLionCount(freeSpinSymbols);
+            totalFreeSpinsCount += getLionCount(freeSpinSymbols);
             spinPayoutMultiplier += identifyResults(freeSpinSymbols);
             int newWinningWildCount = getWinningWildCount(freeSpinSymbols);
             winningWildCount += newWinningWildCount;
@@ -43,15 +47,15 @@ public class SpinGenerator {
         return new NormalSpinResult(symbols, (betSize * spinPayoutMultiplier * winningWildCount), betSize, true, spinPayoutMultiplier, freeSpinResults.toArray(new FreeSpinResult[0]));
     }
 
-    private static Symbols[] generateRow(Symbols[] row, boolean freeSpin) {
+    private static Symbols[] generateRow(Symbols[] row, boolean freeSpin, boolean lionPossible) {
         for (int i = 0; i < 5; i++) {
-            Symbols currentSymbol = generateNormalSymbol(freeSpin, row);
+            Symbols currentSymbol = generateNormalSymbol(freeSpin,lionPossible, row);
             row[i] = currentSymbol;
         }
         return row;
     }
 
-    private static Symbols generateNormalSymbol(boolean freeSpin, Symbols[] currentRow) {
+    private static Symbols generateNormalSymbol(boolean freeSpin, boolean lionPossible, Symbols[] currentRow) {
         double symbolWeight = 0;
         ArrayList<Symbols> symbols = new ArrayList<>();
         symbols.add(Symbols.DOG);
@@ -60,7 +64,10 @@ public class SpinGenerator {
         symbols.add(Symbols.KOALA);
         symbols.add(Symbols.JETON);
         symbols.add(Symbols.BALL);
-        symbols.add(Symbols.LION_GOLD);
+        if(lionPossible) {
+            System.out.println("Lion possible");
+            symbols.add(Symbols.LION_GOLD);
+        }
         if(freeSpin){
             symbols.add(Symbols.WINNING_WILD);
             symbols.add(Symbols.LOOSING_WILD_ONE);

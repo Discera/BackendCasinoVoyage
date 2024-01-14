@@ -7,7 +7,7 @@ public enum Symbols {
     KOALA(0.2,1.8,2.6 , true, false),
     JETON(0.09,2,3, true, false),
     BALL(0.09,2,3, true, false),
-    LION_GOLD(0.06,0,0, false, true),
+    LION_GOLD(0.00,0,0, false, true),
     WINNING_WILD(0.04,0,0, false, true),
     LOOSING_WILD_ONE(0.04,0,0, false, true),
     LOOSING_WILD_TWO(0.04,0,0, false, true),
